@@ -16,8 +16,8 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     try {
-      await login(form);
-      navigate('/portal');
+      const user = await login(form);
+      navigate(user.role === 'admin' ? '/admin' : '/portal');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -39,7 +39,7 @@ export default function LoginPage() {
           <p className="hero-eyebrow">Welcome Back</p>
           <h1>Log in to your portal</h1>
           <p style={{ marginTop: '1rem', maxWidth: '36ch' }}>
-            Track progress, review documents, follow payments, and chat with your project managers.
+            Clients track personal projects. Admins assign sites and manage accounts.
           </p>
         </div>
         <p>Need an account? Sign up from Contact Us.</p>

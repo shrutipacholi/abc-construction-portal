@@ -214,7 +214,7 @@ export default function HomePage() {
               {process.map((step, index) => (
                 <article className="process-step" key={step}>
                   <span>{String(index + 1).padStart(2, '0')}</span>
-                  <h3 style={{ fontSize: '1.2rem', textTransform: 'uppercase' }}>{step}</h3>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 600 }}>{step}</h3>
                 </article>
               ))}
             </div>
@@ -330,7 +330,7 @@ export default function HomePage() {
             <div className="grid-2" style={{ marginTop: '2.5rem', alignItems: 'stretch' }}>
               {faqs.map((item) => (
                 <article className="faq-item" key={item.q}>
-                  <h3 style={{ fontSize: '1.35rem', marginBottom: '0.6rem' }}>{item.q}</h3>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.6rem', letterSpacing: '-0.02em' }}>{item.q}</h3>
                   <p>{item.a}</p>
                 </article>
               ))}

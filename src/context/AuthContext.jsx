@@ -86,8 +86,23 @@ export function AuthProvider({ children }) {
 
   const fetchPortal = () => api('/api/portal', { token });
 
+  const uploadDocument = async (file, { projectId, docType } = {}) => {
+    const body = new FormData();
+    body.append('file', file);
+    if (projectId) body.append('projectId', projectId);
+    if (docType) body.append('docType', docType);
+    const res = await fetch('/api/portal/documents/upload', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'Upload failed');
+    return data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, signup, login, logout, fetchPortal }}>
+    <AuthContext.Provider value={{ user, token, loading, signup, login, logout, fetchPortal, uploadDocument }}>
       {children}
     </AuthContext.Provider>
   );

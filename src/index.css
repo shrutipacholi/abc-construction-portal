@@ -11,8 +11,8 @@
   --navy: #0f1c2e;
   --success: #1f7a4c;
   --warning: #b45309;
-  --font-display: 'Barlow Condensed', sans-serif;
-  --font-body: 'Manrope', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
   --shadow: 0 18px 50px rgba(18, 18, 18, 0.12);
   --radius: 4px;
 }
@@ -32,7 +32,10 @@ body {
   font-family: var(--font-body);
   color: var(--ink);
   background: var(--white);
-  line-height: 1.6;
+  line-height: 1.65;
+  font-size: 1rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 img {
@@ -54,8 +57,9 @@ select {
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  line-height: 1.05;
-  letter-spacing: 0.02em;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -80,23 +84,28 @@ ul {
 
 .section-label {
   color: var(--orange);
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: 600;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  margin-bottom: 0.75rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.85rem;
 }
 
 .section-title {
-  font-size: clamp(2.4rem, 4vw, 3.6rem);
-  text-transform: uppercase;
-  max-width: 16ch;
+  font-size: clamp(2rem, 3.6vw, 2.85rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+  line-height: 1.18;
 }
 
 .section-lead {
   margin-top: 1rem;
   color: var(--muted);
   max-width: 54ch;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  font-weight: 400;
 }
 
 .btn {
@@ -104,10 +113,12 @@ ul {
   align-items: center;
   justify-content: center;
   gap: 0.55rem;
-  padding: 0.9rem 1.45rem;
+  padding: 0.85rem 1.4rem;
   border: 2px solid transparent;
   border-radius: var(--radius);
-  font-weight: 700;
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: -0.01em;
   cursor: pointer;
   transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
@@ -242,24 +253,26 @@ ul {
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
 }
 
 .logo-text strong {
   display: block;
   font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
 .logo-text span {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--orange);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  font-weight: 500;
 }
 
 .nav {
@@ -270,8 +283,9 @@ ul {
 
 .nav a {
   color: rgba(255, 255, 255, 0.86);
-  font-weight: 600;
-  font-size: 0.92rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
 }
 
 .nav a:hover,
@@ -347,17 +361,19 @@ ul {
 
 .hero-eyebrow {
   color: var(--orange);
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-size: 0.86rem;
-  margin-bottom: 1rem;
+  font-size: 0.78rem;
+  margin-bottom: 1.1rem;
 }
 
 .hero h1 {
-  font-size: clamp(3rem, 7vw, 5.4rem);
-  text-transform: uppercase;
-  max-width: 12ch;
+  font-size: clamp(2.6rem, 5.5vw, 4.35rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  max-width: 14ch;
+  line-height: 1.08;
 }
 
 .hero h1 em {
@@ -368,10 +384,12 @@ ul {
 }
 
 .hero p {
-  margin-top: 1.25rem;
-  max-width: 48ch;
+  margin-top: 1.35rem;
+  max-width: 46ch;
   color: rgba(255, 255, 255, 0.88);
   font-size: 1.05rem;
+  line-height: 1.7;
+  font-weight: 400;
 }
 
 .hero-anim {
@@ -411,8 +429,9 @@ ul {
 }
 
 .trust-bar strong {
-  font-size: 0.9rem;
-  letter-spacing: 0.04em;
+  font-size: 0.88rem;
+  letter-spacing: -0.01em;
+  font-weight: 500;
 }
 
 .trust-logos {
@@ -421,8 +440,9 @@ ul {
   gap: 1rem;
   opacity: 0.7;
   font-family: var(--font-display);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 @keyframes heroEyebrowIn {
@@ -565,9 +585,10 @@ ul {
   background: var(--orange);
   color: white;
   font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 800;
+  font-size: 1rem;
+  font-weight: 600;
   margin-bottom: 1rem;
+  letter-spacing: -0.02em;
   transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.35s ease;
 }
 
@@ -575,9 +596,11 @@ ul {
 .why-card h3,
 .project-card h3,
 .blog-card h3 {
-  font-size: 1.45rem;
-  text-transform: uppercase;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
+  line-height: 1.25;
   transition: color 0.35s ease;
 }
 
@@ -607,7 +630,9 @@ ul {
   color: white;
   padding: 1rem 1.2rem;
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   line-height: 1;
 }
 
@@ -632,7 +657,9 @@ ul {
 .stat strong {
   display: block;
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-size: clamp(2.1rem, 3.5vw, 2.9rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
   color: var(--orange);
 }
 
@@ -662,7 +689,9 @@ ul {
   display: inline-block;
   color: var(--orange);
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   margin-bottom: 0.4rem;
 }
 
@@ -675,10 +704,10 @@ ul {
 
 .project-card .tag {
   color: var(--orange);
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 
 .testimonials {
@@ -708,9 +737,11 @@ ul {
 }
 
 .cta-band h2 {
-  font-size: clamp(2.2rem, 4vw, 3.4rem);
-  text-transform: uppercase;
+  font-size: clamp(1.9rem, 3.5vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
   margin-bottom: 1rem;
+  line-height: 1.2;
 }
 
 .site-footer {
@@ -727,9 +758,10 @@ ul {
 
 .site-footer h4 {
   color: white;
-  font-size: 1.3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin-bottom: 1rem;
-  text-transform: uppercase;
 }
 
 .site-footer a:hover {
@@ -779,9 +811,11 @@ ul {
 }
 
 .auth-visual h1 {
-  font-size: clamp(2.8rem, 5vw, 4.2rem);
-  text-transform: uppercase;
-  max-width: 10ch;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  max-width: 12ch;
+  line-height: 1.12;
 }
 
 .auth-panel {
@@ -799,8 +833,9 @@ ul {
 }
 
 .auth-card h2 {
-  font-size: 2.4rem;
-  text-transform: uppercase;
+  font-size: 1.85rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   margin-bottom: 0.4rem;
 }
 
@@ -821,13 +856,18 @@ ul {
   font-size: 0.9rem;
 }
 
-.form-stack input {
+.form-stack input,
+.form-stack select,
+.form-stack textarea {
   border: 1px solid var(--line);
   padding: 0.8rem 0.9rem;
   background: #fbfbfb;
+  width: 100%;
 }
 
-.form-stack input:focus {
+.form-stack input:focus,
+.form-stack select:focus,
+.form-stack textarea:focus {
   outline: 2px solid rgba(241, 90, 36, 0.35);
   border-color: var(--orange);
 }
@@ -868,6 +908,72 @@ ul {
   grid-template-columns: 260px 1fr;
   background: #f3f1ee;
 }
+
+.profile-panel {
+  margin-bottom: 1.5rem;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  margin: 0;
+}
+
+.profile-grid dt {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.profile-grid dd {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.profile-note {
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.empty-state {
+  padding: 1.25rem 0 0.35rem;
+  color: var(--muted);
+}
+
+.empty-state strong {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+}
+
+.empty-state p {
+  margin: 0;
+  max-width: 42ch;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .profile-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 .portal-sidebar {
   background: var(--navy);
@@ -933,13 +1039,16 @@ ul {
 .metric-card strong {
   display: block;
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   margin-top: 0.35rem;
 }
 
 .panel h3 {
-  font-size: 1.4rem;
-  text-transform: uppercase;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   margin-bottom: 1rem;
 }
 

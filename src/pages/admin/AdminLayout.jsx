@@ -3,27 +3,39 @@ import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const nav = [
-  { to: '/portal', end: true, label: 'Dashboard' },
-  { to: '/portal/projects', label: 'Projects' },
-  { to: '/portal/milestones', label: 'Milestones' },
-  { to: '/portal/payments', label: 'Payments' },
-  { to: '/portal/documents', label: 'Documents' },
-  { to: '/portal/messages', label: 'Messages' },
-  { to: '/portal/reports', label: 'Reports' },
+  { to: '/admin', end: true, label: 'Overview' },
+  { to: '/admin/assign', label: 'Assign Project' },
+  { to: '/admin/projects', label: 'All Projects' },
 ];
 
-export default function PortalLayout() {
-  const { user, loading, logout, fetchPortal } = useAuth();
+export default function AdminLayout() {
+  const { user, token, loading, logout } = useAuth();
   const navigate = useNavigate();
-  const [portal, setPortal] = useState(null);
+  const [clients, setClients] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [error, setError] = useState('');
+  const [ready, setReady] = useState(false);
+
+  const refresh = async () => {
+    const headers = { Authorization: `Bearer ${token}` };
+    const [cRes, pRes] = await Promise.all([
+      fetch('/api/admin/clients', { headers }),
+      fetch('/api/admin/projects', { headers }),
+    ]);
+    const cData = await cRes.json();
+    const pData = await pRes.json();
+    if (!cRes.ok) throw new Error(cData.message || 'Failed to load clients');
+    if (!pRes.ok) throw new Error(pData.message || 'Failed to load projects');
+    setClients(cData.clients || []);
+    setProjects(pData.projects || []);
+  };
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.role !== 'admin' || !token) return;
     let cancelled = false;
-    fetchPortal()
-      .then((data) => {
-        if (!cancelled) setPortal(data);
+    refresh()
+      .then(() => {
+        if (!cancelled) setReady(true);
       })
       .catch((err) => {
         if (!cancelled) setError(err.message);
@@ -31,18 +43,18 @@ export default function PortalLayout() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once per authenticated user
-  }, [user?.id]);
+  }, [user?.id, token]);
 
   if (loading) {
     return (
       <div className="auth-panel" style={{ minHeight: '100vh' }}>
-        <p>Loading portal…</p>
+        <p>Loading admin…</p>
       </div>
     );
   }
 
   if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/portal" replace />;
 
   return (
     <div className="portal-shell">
@@ -50,7 +62,7 @@ export default function PortalLayout() {
         <div className="logo">
           <div className="logo-mark">ABC</div>
           <div className="logo-text">
-            <strong>Client Portal</strong>
+            <strong>Admin Console</strong>
             <span>ABC Construction</span>
           </div>
         </div>
@@ -76,10 +88,8 @@ export default function PortalLayout() {
       <div className="portal-main">
         <div className="portal-top">
           <div>
-            <strong>Welcome, {user.name}</strong>
-            <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
-              Personal client portal · {user.email}
-            </div>
+            <strong>Admin · {user.name}</strong>
+            <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>{user.email}</div>
           </div>
           <NavLink className="btn btn-outline" to="/">
             View Website
@@ -87,7 +97,10 @@ export default function PortalLayout() {
         </div>
         <div className="portal-content">
           {error ? <div className="form-error" style={{ marginBottom: '1rem' }}>{error}</div> : null}
-          <Outlet context={{ portal, user }} />
+          {!ready && !error ? <p>Loading…</p> : null}
+          {ready ? (
+            <Outlet context={{ clients, projects, token, refresh, setProjects, setClients }} />
+          ) : null}
         </div>
       </div>
     </div>

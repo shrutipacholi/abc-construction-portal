@@ -2,7 +2,12 @@ node_modules
 dist
 server/node_modules
 server/data
+server/uploads
+server/db/mysql-init-reset.txt
 .DS_Store
 *.log
 .env
+.vercel
+.tools
+
 .vercel

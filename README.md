@@ -7,27 +7,43 @@ Marketing website and authenticated client portal for ABC Construction Pvt. Ltd.
 - Public company website (Home, About, Services, Projects, Careers, Blog, FAQ, Contact)
 - **Contact Us / Get a Free Quote** → Signup
 - Signup & Login with JWT
-- Client Portal: progress, milestones, payments, documents, messages, reports & certificates
+- Client Portal backed by **MySQL** (personal data only per user)
 
-## Run locally
+## Quick start (local)
 
 ```bash
-# install frontend deps (from repo root)
-npm install
+# 1) Start local MySQL (port 3307)
+start-mysql.bat
 
-# install API deps
-npm install --prefix server
+# 2) (first time only) create tables + seed data
+npm run db:init
 
-# run website + API together
+# 3) Run website + API
 npm run dev
 ```
 
 - Website: http://localhost:5173
+- Login: http://localhost:5173/login
 - API: http://localhost:5000
 
-## Flow
+### Demo logins (from MySQL seed)
 
-1. Visit the website
-2. Click **Contact Us** / **Get a Free Quote**
-3. Create an account on Signup
-4. You are redirected into the **Client Portal** (or use Login later)
+| Email | Password |
+|--------|----------|
+| client@test.com | secret1 |
+| ananya@example.com | Demo@123 |
+| rohan@example.com | Client@123 |
+| meera@example.com | Build@123 |
+
+Each user only sees their own projects and portal data.
+
+## Database
+
+Tables: `users`, `quote_requests`, `projects`, `milestones`, `payments`, `documents`, `messages`, `notifications`
+
+Local MySQL credentials are in `.env` (not committed). Default local instance:
+
+- Host: `127.0.0.1`
+- Port: `3307`
+- User: `root`
+- Database: `abc_construction`

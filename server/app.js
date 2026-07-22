@@ -2,128 +2,39 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import fs from 'fs';
+import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
 import { fileURLToPath } from 'url';
-import { v4 as uuidv4 } from 'uuid';
+import {
+  assignProject,
+  createStarterPortalRows,
+  createUser,
+  findUserByEmail,
+  findUserById,
+  getDocumentForUser,
+  getPortalForUser,
+  listAllProjects,
+  listClients,
+  publicUser,
+  saveUploadedDocument,
+} from './db/repository.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const JWT_SECRET = process.env.JWT_SECRET || 'abc-construction-dev-secret';
-const isServerless = Boolean(process.env.VERCEL);
-const DATA_DIR = isServerless ? path.join('/tmp', 'abc-construction') : path.join(__dirname, 'data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const uploadDir = process.env.VERCEL
+  ? path.join('/tmp', 'abc-uploads')
+  : path.join(__dirname, 'uploads');
 
-let memoryUsers = null;
+fs.mkdirSync(uploadDir, { recursive: true });
 
-const samplePortal = {
-  projects: [
-    {
-      id: 'p1',
-      name: 'Luxury Villa — Palm Estate',
-      type: 'Residential',
-      status: 'In Progress',
-      progress: 68,
-      location: 'Pune',
-      manager: 'Rahul Mehta',
-      startDate: '2025-11-01',
-      dueDate: '2026-09-30',
-    },
-    {
-      id: 'p2',
-      name: 'Corporate Office Tower',
-      type: 'Commercial',
-      status: 'Planning',
-      progress: 22,
-      location: 'Mumbai',
-      manager: 'Priya Sharma',
-      startDate: '2026-02-15',
-      dueDate: '2027-06-30',
-    },
-  ],
-  milestones: [
-    { id: 'm1', projectId: 'p1', title: 'Foundation Complete', date: '2026-01-20', done: true },
-    { id: 'm2', projectId: 'p1', title: 'Structure Framing', date: '2026-04-15', done: true },
-    { id: 'm3', projectId: 'p1', title: 'Interior Finishing', date: '2026-07-30', done: false },
-    { id: 'm4', projectId: 'p1', title: 'Final Handover', date: '2026-09-30', done: false },
-  ],
-  payments: [
-    { id: 'pay1', projectId: 'p1', label: 'Mobilization Advance', amount: 850000, status: 'Paid', date: '2025-11-05' },
-    { id: 'pay2', projectId: 'p1', label: 'Milestone 2 — Structure', amount: 1200000, status: 'Paid', date: '2026-04-18' },
-    { id: 'pay3', projectId: 'p1', label: 'Milestone 3 — Interiors', amount: 950000, status: 'Due', date: '2026-08-01' },
-  ],
-  documents: [
-    { id: 'd1', name: 'Contract Agreement.pdf', type: 'Contract', date: '2025-10-28' },
-    { id: 'd2', name: 'Architectural Drawings.zip', type: 'Drawings', date: '2025-11-12' },
-    { id: 'd3', name: 'Quality Certificate — Foundation.pdf', type: 'Certificate', date: '2026-01-22' },
-  ],
-  messages: [
-    {
-      id: 'msg1',
-      from: 'Rahul Mehta',
-      role: 'Project Manager',
-      text: 'Foundation inspection passed. Next week we begin framing.',
-      time: '2026-01-21 10:30',
-    },
-    {
-      id: 'msg2',
-      from: 'You',
-      role: 'Client',
-      text: 'Thanks. Please share photos of the site progress.',
-      time: '2026-01-21 14:05',
-    },
-  ],
-  notifications: [
-    { id: 'n1', text: 'Milestone “Structure Framing” marked complete', time: '2 days ago' },
-    { id: 'n2', text: 'New payment invoice uploaded', time: '1 week ago' },
-    { id: 'n3', text: 'Quality certificate available for download', time: '3 weeks ago' },
-  ],
-};
-
-function ensureData() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, '[]');
-}
-
-function defaultUsers() {
-  return [
-    {
-      id: 'demo-client',
-      name: 'Demo Client',
-      email: 'client@test.com',
-      phone: '9999999999',
-      company: 'Demo Corp',
-      passwordHash: bcrypt.hashSync('secret1', 8),
-      createdAt: new Date().toISOString(),
-    },
-  ];
-}
-
-function readUsers() {
-  try {
-    ensureData();
-    const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
-    if (Array.isArray(users) && users.length > 0) {
-      memoryUsers = users;
-      return users;
-    }
-  } catch {
-    // fall through
-  }
-  if (!memoryUsers) memoryUsers = defaultUsers();
-  return memoryUsers;
-}
-
-function writeUsers(users) {
-  memoryUsers = users;
-  try {
-    ensureData();
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-  } catch {
-    // ignore
-  }
-}
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+});
 
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -138,13 +49,40 @@ function authMiddleware(req, res, next) {
   }
 }
 
+async function adminMiddleware(req, res, next) {
+  try {
+    const user = await findUserById(req.user.id);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    req.admin = user;
+    next();
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+}
+
+function signToken(user) {
+  return jwt.sign(
+    { id: user.id, email: user.email, name: user.name, role: user.role || 'client' },
+    JWT_SECRET,
+    { expiresIn: '7d' },
+  );
+}
+
 export function createApp() {
   const app = express();
   app.use(cors());
   app.use(express.json());
+  app.use('/uploads', express.static(uploadDir));
 
-  app.get('/api/health', (_req, res) => {
-    res.json({ ok: true });
+  app.get('/api/health', async (_req, res) => {
+    try {
+      await findUserByEmail('client@test.com');
+      res.json({ ok: true, db: 'mysql' });
+    } catch (err) {
+      res.status(500).json({ ok: false, db: 'mysql', message: err.message });
+    }
   });
 
   app.post('/api/auth/signup', async (req, res) => {
@@ -157,36 +95,25 @@ export function createApp() {
         return res.status(400).json({ message: 'Password must be at least 6 characters' });
       }
 
-      const users = readUsers();
       const normalized = email.trim().toLowerCase();
-      if (users.some((u) => u.email === normalized)) {
+      if (await findUserByEmail(normalized)) {
         return res.status(409).json({ message: 'An account with this email already exists' });
       }
 
-      const user = {
-        id: uuidv4(),
+      const user = await createUser({
         name: name.trim(),
         email: normalized,
         phone: phone?.trim() || '',
         company: company?.trim() || '',
         passwordHash: await bcrypt.hash(password, 10),
-        createdAt: new Date().toISOString(),
-      };
-
-      users.push(user);
-      writeUsers(users);
-
-      const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, {
-        expiresIn: '7d',
+        role: 'client',
       });
+      await createStarterPortalRows(user);
 
-      res.status(201).json({
-        token,
-        user: { id: user.id, name: user.name, email: user.email, phone: user.phone, company: user.company },
-      });
+      res.status(201).json({ token: signToken(user), user: publicUser(user) });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: 'Signup failed' });
+      res.status(500).json({ message: 'Signup failed', detail: err.message });
     }
   });
 
@@ -197,37 +124,129 @@ export function createApp() {
         return res.status(400).json({ message: 'Email and password are required' });
       }
 
-      const users = readUsers();
-      const user = users.find((u) => u.email === email.trim().toLowerCase());
-      if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      const user = await findUserByEmail(email.trim().toLowerCase());
+      if (!user || !(await bcrypt.compare(password, user.password_hash))) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
-      const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, {
-        expiresIn: '7d',
-      });
-
-      res.json({
-        token,
-        user: { id: user.id, name: user.name, email: user.email, phone: user.phone, company: user.company },
-      });
+      res.json({ token: signToken(user), user: publicUser(user) });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: 'Login failed' });
+      res.status(500).json({ message: 'Login failed', detail: err.message });
     }
   });
 
-  app.get('/api/auth/me', authMiddleware, (req, res) => {
-    const users = readUsers();
-    const user = users.find((u) => u.id === req.user.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json({
-      user: { id: user.id, name: user.name, email: user.email, phone: user.phone, company: user.company },
-    });
+  app.get('/api/auth/me', authMiddleware, async (req, res) => {
+    try {
+      const user = await findUserById(req.user.id);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      res.json({ user: publicUser(user) });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to load profile' });
+    }
   });
 
-  app.get('/api/portal', authMiddleware, (_req, res) => {
-    res.json(samplePortal);
+  app.get('/api/portal', authMiddleware, async (req, res) => {
+    try {
+      const portal = await getPortalForUser(req.user.id);
+      if (!portal) return res.status(404).json({ message: 'User not found' });
+      res.json(portal);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Failed to load portal', detail: err.message });
+    }
+  });
+
+  app.post('/api/portal/documents/upload', authMiddleware, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: 'File is required' });
+
+      const safeName = req.file.originalname.replace(/[^\w.\-() ]+/g, '_');
+      const storedName = `${Date.now()}-${safeName}`;
+      const diskPath = path.join(uploadDir, storedName);
+      fs.writeFileSync(diskPath, req.file.buffer);
+
+      const id = await saveUploadedDocument({
+        userId: req.user.id,
+        projectId: req.body.projectId || null,
+        name: safeName,
+        docType: req.body.docType || 'Upload',
+        mimeType: req.file.mimetype,
+        filePath: storedName,
+        fileData: req.file.buffer,
+      });
+
+      res.status(201).json({
+        id,
+        name: safeName,
+        url: `/api/portal/documents/${id}/download`,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Upload failed', detail: err.message });
+    }
+  });
+
+  app.get('/api/portal/documents/:id/download', authMiddleware, async (req, res) => {
+    try {
+      const user = await findUserById(req.user.id);
+      const doc = await getDocumentForUser(req.params.id, req.user.id, user?.role === 'admin');
+      if (!doc) return res.status(404).json({ message: 'Document not found' });
+
+      if (doc.file_data) {
+        res.setHeader('Content-Type', doc.mime_type || 'application/octet-stream');
+        res.setHeader('Content-Disposition', `inline; filename="${doc.name}"`);
+        return res.send(doc.file_data);
+      }
+
+      if (doc.file_path) {
+        const full = path.join(uploadDir, doc.file_path);
+        if (fs.existsSync(full)) return res.sendFile(full);
+      }
+
+      return res.status(404).json({ message: 'File content not available' });
+    } catch (err) {
+      res.status(500).json({ message: 'Download failed' });
+    }
+  });
+
+  app.get('/api/admin/clients', authMiddleware, adminMiddleware, async (_req, res) => {
+    try {
+      res.json({ clients: await listClients() });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get('/api/admin/projects', authMiddleware, adminMiddleware, async (_req, res) => {
+    try {
+      res.json({ projects: await listAllProjects() });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post('/api/admin/projects', authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { userId, name, type, status, progress, location, manager, startDate, dueDate } = req.body;
+      if (!userId || !name?.trim() || !type?.trim()) {
+        return res.status(400).json({ message: 'Client, project name, and type are required' });
+      }
+      const id = await assignProject({
+        userId,
+        name: name.trim(),
+        type: type.trim(),
+        status,
+        progress,
+        location,
+        manager,
+        startDate,
+        dueDate,
+      });
+      res.status(201).json({ id, message: 'Project assigned' });
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
   });
 
   return app;

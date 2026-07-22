@@ -1,0 +1,105 @@
+-- ABC Construction — MySQL schema
+CREATE DATABASE IF NOT EXISTS abc_construction CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE abc_construction;
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS documents;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS milestones;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS quote_requests;
+DROP TABLE IF EXISTS users;
+SET FOREIGN_KEY_CHECKS = 1;
+
+CREATE TABLE users (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  phone VARCHAR(40) DEFAULT '',
+  company VARCHAR(160) DEFAULT '',
+  role VARCHAR(20) NOT NULL DEFAULT 'client',
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE quote_requests (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'Submitted',
+  company VARCHAR(160) DEFAULT '',
+  note VARCHAR(500) DEFAULT '',
+  submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_quote_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE projects (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  type VARCHAR(80) NOT NULL,
+  status VARCHAR(60) NOT NULL,
+  progress INT NOT NULL DEFAULT 0,
+  location VARCHAR(120) DEFAULT '',
+  manager VARCHAR(120) DEFAULT '',
+  start_date DATE NULL,
+  due_date DATE NULL,
+  CONSTRAINT fk_project_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE milestones (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  project_id VARCHAR(36) NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  due_date DATE NULL,
+  is_done TINYINT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_milestone_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_milestone_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE payments (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  project_id VARCHAR(36) NOT NULL,
+  label VARCHAR(200) NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  status VARCHAR(40) NOT NULL,
+  paid_on DATE NULL,
+  CONSTRAINT fk_payment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_payment_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE documents (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  project_id VARCHAR(36) NULL,
+  name VARCHAR(255) NOT NULL,
+  doc_type VARCHAR(80) NOT NULL,
+  mime_type VARCHAR(120) NULL,
+  file_path VARCHAR(500) NULL,
+  file_data LONGBLOB NULL,
+  uploaded_on DATE NULL,
+  CONSTRAINT fk_document_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_document_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE messages (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  sender_name VARCHAR(120) NOT NULL,
+  sender_role VARCHAR(80) NOT NULL,
+  body TEXT NOT NULL,
+  sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_message_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE notifications (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  text VARCHAR(500) NOT NULL,
+  created_label VARCHAR(60) NOT NULL DEFAULT 'Just now',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_notification_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;

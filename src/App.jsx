@@ -13,6 +13,8 @@ import {
   PortalProjects,
   PortalReports,
 } from './pages/portal/PortalPages';
+import AdminLayout from './pages/admin/AdminLayout';
+import { AdminAssign, AdminOverview, AdminProjects } from './pages/admin/AdminPages';
 
 export default function App() {
   return (
@@ -29,6 +31,11 @@ export default function App() {
           <Route path="documents" element={<PortalDocuments />} />
           <Route path="messages" element={<PortalMessages />} />
           <Route path="reports" element={<PortalReports />} />
+        </Route>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminOverview />} />
+          <Route path="assign" element={<AdminAssign />} />
+          <Route path="projects" element={<AdminProjects />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
