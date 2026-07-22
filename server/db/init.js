@@ -12,6 +12,7 @@ const port = Number(process.env.MYSQL_PORT || 3306);
 const user = process.env.MYSQL_USER || 'root';
 const password = process.env.MYSQL_PASSWORD ?? '';
 const database = process.env.MYSQL_DATABASE || 'abc_construction';
+const ssl = process.env.MYSQL_SSL === 'true' ? { minVersion: 'TLSv1.2', rejectUnauthorized: true } : undefined;
 
 async function main() {
   console.log(`Connecting to MySQL at ${host}:${port} as ${user}...`);
@@ -21,6 +22,7 @@ async function main() {
     user,
     password,
     multipleStatements: true,
+    ssl,
   });
 
   try {

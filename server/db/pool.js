@@ -16,6 +16,7 @@ const config = {
   waitForConnections: true,
   connectionLimit: 10,
   namedPlaceholders: true,
+  ssl: process.env.MYSQL_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
 };
 
 let pool;
