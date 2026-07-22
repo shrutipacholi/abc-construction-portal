@@ -14,7 +14,22 @@ import {
   PortalReports,
 } from './pages/portal/PortalPages';
 import AdminLayout from './pages/admin/AdminLayout';
-import { AdminAssign, AdminOverview, AdminProjects } from './pages/admin/AdminPages';
+import {
+  AdminAdministration,
+  AdminAgreements,
+  AdminApprovals,
+  AdminAssign,
+  AdminDesign,
+  AdminExpenses,
+  AdminFinanceQueue,
+  AdminInquiries,
+  AdminOverview,
+  AdminPayments,
+  AdminProjects,
+  AdminQuotations,
+  AdminReports,
+  AdminVendors,
+} from './pages/admin/AdminPages';
 
 export default function App() {
   return (
@@ -34,8 +49,19 @@ export default function App() {
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminOverview />} />
-          <Route path="assign" element={<AdminAssign />} />
+          <Route path="inquiries" element={<AdminInquiries />} />
           <Route path="projects" element={<AdminProjects />} />
+          <Route path="assign" element={<AdminAssign />} />
+          <Route path="quotations" element={<AdminQuotations />} />
+          <Route path="agreements" element={<AdminAgreements />} />
+          <Route path="approvals" element={<AdminApprovals />} />
+          <Route path="payments" element={<AdminPayments />} />
+          <Route path="expenses" element={<AdminExpenses />} />
+          <Route path="finance-queue" element={<AdminFinanceQueue />} />
+          <Route path="design" element={<AdminDesign />} />
+          <Route path="vendors" element={<AdminVendors />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="administration" element={<AdminAdministration />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -6,6 +6,7 @@ const links = [
   { to: '/#home', label: 'Home' },
   { to: '/#about', label: 'About' },
   { to: '/#services', label: 'Services' },
+  { to: '/#process', label: 'Process' },
   { to: '/#projects', label: 'Projects' },
   { to: '/#blog', label: 'Blog' },
   { to: '/#careers', label: 'Careers' },
@@ -56,8 +57,12 @@ export default function SiteHeader() {
           <div className="header-actions">
             <span className="header-phone">+91 XXXXX XXXXX</span>
             {user ? (
-              <button className="btn btn-orange" type="button" onClick={() => navigate('/portal')}>
-                Client Portal
+              <button
+                className="btn btn-orange"
+                type="button"
+                onClick={() => navigate(user.role === 'admin' ? '/admin' : '/portal')}
+              >
+                {user.role === 'admin' ? 'Admin Panel' : 'Client Portal'}
               </button>
             ) : (
               <button className="btn btn-orange" type="button" onClick={() => navigate('/signup')}>
@@ -104,8 +109,7 @@ export function SiteFooter() {
           <h4>Client Access</h4>
           <ul>
             <li><NavLink to="/signup">Create Account</NavLink></li>
-            <li><NavLink to="/login">Client Login</NavLink></li>
-            <li><NavLink to="/portal">Portal Dashboard</NavLink></li>
+            <li><NavLink to="/login">Login</NavLink></li>
           </ul>
         </div>
         <div>

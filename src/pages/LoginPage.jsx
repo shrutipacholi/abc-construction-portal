@@ -39,10 +39,10 @@ export default function LoginPage() {
           <p className="hero-eyebrow">Welcome Back</p>
           <h1>Log in to your portal</h1>
           <p style={{ marginTop: '1rem', maxWidth: '36ch' }}>
-            Clients track personal projects. Admins assign sites and manage accounts.
+            Clients track personal projects. Admins manage the portfolio console.
           </p>
         </div>
-        <p>Need an account? Sign up from Contact Us.</p>
+        <p>Admin demo: admin@abcconstruction.com / Admin@123</p>
       </aside>
 
       <div className="auth-panel">

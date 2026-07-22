@@ -28,7 +28,20 @@ Marketing website + MySQL-backed client/admin portal for ABC Construction Pvt. L
 - Client login → `/portal`
 - Admin login → `/admin`
 
-## Local run
+## Local run (one site only)
+
+Use **one URL** for everything:
+
+**http://localhost:5173**
+
+| Page | Path |
+|------|------|
+| Website | `/` |
+| Login | `/login` |
+| Client portal | `/portal` |
+| Admin panel | `/admin` |
+
+Website, portal, and admin are the **same app** — just different pages. Do not open `localhost:5000` in the browser (that is the API only; Vite proxies `/api` for you).
 
 ```bash
 start-mysql.bat
@@ -39,4 +52,4 @@ npm run db:migrate
 npm run dev
 ```
 
-Website: http://localhost:5173
+If the site won’t start on 5173, stop other old `npm run dev` / Vite windows first — otherwise you may see duplicate ports like 5174 / 5175.

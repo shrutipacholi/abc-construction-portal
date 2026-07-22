@@ -13,8 +13,11 @@ import {
   createUser,
   findUserByEmail,
   findUserById,
+  getAdminDashboardStats,
   getDocumentForUser,
   getPortalForUser,
+  listAdminInquiries,
+  listAdminPayments,
   listAllProjects,
   listClients,
   publicUser,
@@ -218,9 +221,33 @@ export function createApp() {
     }
   });
 
+  app.get('/api/admin/dashboard', authMiddleware, adminMiddleware, async (_req, res) => {
+    try {
+      res.json({ stats: await getAdminDashboardStats() });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
   app.get('/api/admin/projects', authMiddleware, adminMiddleware, async (_req, res) => {
     try {
       res.json({ projects: await listAllProjects() });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get('/api/admin/inquiries', authMiddleware, adminMiddleware, async (_req, res) => {
+    try {
+      res.json({ inquiries: await listAdminInquiries() });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get('/api/admin/payments', authMiddleware, adminMiddleware, async (_req, res) => {
+    try {
+      res.json({ payments: await listAdminPayments() });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }

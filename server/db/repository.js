@@ -87,6 +87,157 @@ export async function listAllProjects() {
   }));
 }
 
+export async function getAdminDashboardStats() {
+  const [activeRows, paymentSumRows, pendingQuoteRows, duePaymentRows, financeRows, projectFinance, statusRows, notifyRows] =
+    await Promise.all([
+      query(
+        `SELECT COUNT(*) AS count FROM projects
+         WHERE status IN ('In Progress', 'On Hold')`,
+      ),
+      query(`SELECT COALESCE(SUM(amount), 0) AS total FROM payments`),
+      query(
+        `SELECT COUNT(*) AS count FROM quote_requests
+         WHERE status = 'Submitted' OR status = 'Pending'`,
+      ),
+      query(
+        `SELECT COUNT(*) AS count FROM payments
+         WHERE status = 'Due' OR status = 'Pending'`,
+      ),
+      query(
+        `SELECT COUNT(*) AS count FROM quote_requests
+         WHERE status = 'Submitted' AND note LIKE '%additional%'`,
+      ),
+      query(
+        `SELECT
+           p.id,
+           p.name,
+           COALESCE(SUM(CASE WHEN pay.status = 'Paid' THEN pay.amount ELSE 0 END), 0) AS spent,
+           COALESCE(SUM(pay.amount), 0) AS budget
+         FROM projects p
+         LEFT JOIN payments pay ON pay.project_id = p.id
+         WHERE p.status IN ('In Progress', 'On Hold', 'Planning')
+         GROUP BY p.id, p.name
+         ORDER BY budget DESC
+         LIMIT 6`,
+      ),
+      query(
+        `SELECT status, COUNT(*) AS count
+         FROM projects
+         GROUP BY status
+         ORDER BY count DESC`,
+      ),
+      query(
+        `SELECT n.id, n.text, n.created_label, n.created_at, u.name AS client_name
+         FROM notifications n
+         JOIN users u ON u.id = n.user_id
+         ORDER BY n.created_at DESC
+         LIMIT 8`,
+      ),
+    ]);
+
+  const portfolioRupees = Number(paymentSumRows[0]?.total) || 0;
+  const portfolioLakhs = portfolioRupees / 100000;
+
+  const budgetVsSpent = projectFinance.map((row, index) => {
+    const budget = Number(row.budget) || 0;
+    const spent = Number(row.spent) || 0;
+    const code = `PRJ-${String(index + 1).padStart(3, '0')}`;
+    return {
+      id: row.id,
+      code,
+      name: row.name,
+      budget,
+      spent,
+      budgetL: budget / 100000,
+      spentL: spent / 100000,
+    };
+  });
+
+  const statusPie = statusRows.map((row) => ({
+    label: row.status,
+    value: Number(row.count) || 0,
+  }));
+
+  const notifications = notifyRows.map((row) => {
+    const text = row.text || '';
+    let title = 'Site update';
+    if (/payment|invoice|billing/i.test(text)) title = 'Payment alert';
+    else if (/assign|project|inquiry|enquiry|welcome/i.test(text)) title = 'New inquiry';
+    else if (/request|need|update/i.test(text)) title = 'New work request';
+    else if (/milestone|complete|certificate|photo/i.test(text)) title = 'Site update';
+
+    const created = row.created_at ? new Date(row.created_at) : null;
+    const dateLabel = created
+      ? created.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      : row.created_label || '';
+
+    return {
+      id: row.id,
+      title,
+      body: `${row.client_name}: ${text}`,
+      date: dateLabel,
+    };
+  });
+
+  return {
+    activeSites: Number(activeRows[0]?.count) || 0,
+    portfolioValue: portfolioLakhs,
+    portfolioValueLabel:
+      portfolioLakhs >= 1
+        ? `₹${portfolioLakhs.toFixed(2)} L`
+        : `₹${Math.round(portfolioRupees).toLocaleString('en-IN')}`,
+    pendingRequests: Number(pendingQuoteRows[0]?.count) || 0,
+    financeQueue: Number(financeRows[0]?.count) || 0,
+    pendingPayments: Number(duePaymentRows[0]?.count) || 0,
+    budgetVsSpent,
+    statusPie,
+    notifications,
+  };
+}
+
+export async function listAdminInquiries() {
+  const rows = await query(
+    `SELECT q.id, q.status, q.company, q.note, q.submitted_at,
+            u.name AS client_name, u.email AS client_email, u.phone AS client_phone
+     FROM quote_requests q
+     LEFT JOIN users u ON u.id = q.user_id
+     ORDER BY q.submitted_at DESC`
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    status: r.status,
+    company: r.company,
+    note: r.note,
+    submittedAt: r.submitted_at
+      ? new Date(r.submitted_at).toISOString().slice(0, 16).replace('T', ' ')
+      : '',
+    clientName: r.client_name || '—',
+    clientEmail: r.client_email || '',
+    clientPhone: r.client_phone || '',
+  }));
+}
+
+export async function listAdminPayments() {
+  const rows = await query(
+    `SELECT pay.id, pay.label, pay.amount, pay.status, pay.paid_on,
+            p.name AS project_name, u.name AS client_name, u.email AS client_email
+     FROM payments pay
+     LEFT JOIN projects p ON p.id = pay.project_id
+     LEFT JOIN users u ON u.id = pay.user_id
+     ORDER BY pay.paid_on IS NULL DESC, pay.paid_on DESC`
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    label: r.label,
+    amount: Number(r.amount) || 0,
+    status: r.status,
+    paidOn: r.paid_on ? String(r.paid_on).slice(0, 10) : null,
+    projectName: r.project_name || '—',
+    clientName: r.client_name || '—',
+    clientEmail: r.client_email || '',
+  }));
+}
+
 export async function assignProject({ userId, name, type, status, progress, location, manager, startDate, dueDate }) {
   const client = await findUserById(userId);
   if (!client || (client.role || 'client') === 'admin') {

@@ -4,5 +4,5 @@ const app = createApp();
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`ABC Construction API running on http://localhost:${PORT}`);
+  console.log(`API ready on http://localhost:${PORT} (proxied — open only http://localhost:5173)`);
 });
