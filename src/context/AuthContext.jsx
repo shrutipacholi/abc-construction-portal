@@ -38,18 +38,32 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    let cancelled = false;
+    setLoading(true);
     api('/api/auth/me', { token })
       .then((data) => {
+        if (cancelled) return;
         setUser(data.user);
         localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       })
-      .catch(() => {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-        setToken(null);
-        setUser(null);
+      .catch((err) => {
+        if (cancelled) return;
+        const message = String(err?.message || '');
+        // Only clear session for auth failures, not transient API/DB errors.
+        if (/unauthorized|invalid or expired token|user not found/i.test(message)) {
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          setToken(null);
+          setUser(null);
+        }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const persist = (nextToken, nextUser) => {

@@ -16,10 +16,13 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     try {
-      const user = await login(form);
-      navigate(user.role === 'admin' ? '/admin' : '/portal');
+      const user = await login({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+      navigate((user.role || '').toLowerCase() === 'admin' ? '/admin' : '/portal', { replace: true });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Login failed');
     } finally {
       setSubmitting(false);
     }

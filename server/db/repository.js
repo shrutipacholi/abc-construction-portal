@@ -224,7 +224,7 @@ export async function listAdminPayments() {
      FROM payments pay
      LEFT JOIN projects p ON p.id = pay.project_id
      LEFT JOIN users u ON u.id = pay.user_id
-     ORDER BY pay.paid_on IS NULL DESC, pay.paid_on DESC`
+     ORDER BY (pay.paid_on IS NULL) DESC, pay.paid_on DESC`
   );
   return rows.map((r) => ({
     id: r.id,

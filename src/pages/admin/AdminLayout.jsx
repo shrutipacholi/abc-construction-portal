@@ -123,29 +123,40 @@ export default function AdminLayout() {
       fetch('/api/admin/inquiries', { headers }),
       fetch('/api/admin/payments', { headers }),
     ]);
-    const cData = await cRes.json();
-    const pData = await pRes.json();
-    const iData = await iRes.json();
-    const payData = await payRes.json();
+
+    const cData = await cRes.json().catch(() => ({}));
+    const pData = await pRes.json().catch(() => ({}));
+    const iData = await iRes.json().catch(() => ({}));
+    const payData = await payRes.json().catch(() => ({}));
+
     if (!cRes.ok) throw new Error(cData.message || 'Failed to load clients');
     if (!pRes.ok) throw new Error(pData.message || 'Failed to load projects');
-    if (!iRes.ok) throw new Error(iData.message || 'Failed to load inquiries');
-    if (!payRes.ok) throw new Error(payData.message || 'Failed to load payments');
+
     setClients(cData.clients || []);
     setProjects(pData.projects || []);
-    setInquiries(iData.inquiries || []);
-    setPayments(payData.payments || []);
+    setInquiries(iRes.ok ? iData.inquiries || [] : []);
+    setPayments(payRes.ok ? payData.payments || [] : []);
+
+    const softErrors = [];
+    if (!iRes.ok) softErrors.push(iData.message || 'Inquiries unavailable');
+    if (!payRes.ok) softErrors.push(payData.message || 'Payments unavailable');
+    setError(softErrors.join(' · '));
   };
 
   useEffect(() => {
     if (!user || user.role !== 'admin' || !token) return;
     let cancelled = false;
+    setReady(false);
+    setError('');
     refresh()
       .then(() => {
         if (!cancelled) setReady(true);
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) {
+          setError(err.message || 'Failed to load admin data');
+          setReady(false);
+        }
       });
     return () => {
       cancelled = true;
