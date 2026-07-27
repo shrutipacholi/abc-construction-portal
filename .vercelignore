@@ -1,11 +1,7 @@
 .tools
 .node_modules
 node_modules
-server/node_modules
-server/uploads
-server/data
-server/db/tidb-zero.json
-server/db/tidb-req.json
+server
 .env
 .vercel
 dist

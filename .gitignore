@@ -1,15 +1,10 @@
 node_modules
 dist
-server/node_modules
-server/data
+server/target
+server/.mvn/wrapper/maven-wrapper.jar
 server/uploads
-server/db/mysql-init-reset.txt
 .DS_Store
 *.log
 .env
 .vercel
 .tools
-server/db/tidb-zero.json
-server/db/tidb-req.json
-
-.vercel
