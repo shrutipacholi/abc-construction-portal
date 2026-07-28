@@ -8,3 +8,5 @@ server/uploads
 .env
 .vercel
 .tools
+*.zip
+.zip

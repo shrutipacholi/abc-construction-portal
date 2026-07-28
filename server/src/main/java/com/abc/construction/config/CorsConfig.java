@@ -18,13 +18,13 @@ public class CorsConfig implements WebMvcConfigurer {
         .allowedOriginPatterns("*")
         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         .allowedHeaders("*")
-        .allowCredentials(true);
+        .allowCredentials(false);
   }
 
   @Bean
   public CorsFilter corsFilter() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowCredentials(true);
+    config.setAllowCredentials(false);
     config.addAllowedOriginPattern("*");
     config.addAllowedHeader("*");
     config.addAllowedMethod("*");

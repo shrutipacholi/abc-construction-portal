@@ -37,7 +37,8 @@ export default function QuotationPage() {
 
     setBusy(true);
     try {
-      const res = await fetch('/api/quotations', {
+      const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+      const res = await fetch(`${apiBase}/api/quotations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, mobile, email, address }),

@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: abc-construction-api
+    runtime: docker
+    rootDir: server
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      PORT: 8080
